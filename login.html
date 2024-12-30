@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン｜PESTのHP</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+</head>
+<body>
+  <section class="hero is-fullheight">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title">ペストのHPへログイン</h1>
+        <div class="box">
+          <div class="field">
+            <label class="label">メールアドレス</label>
+            <div class="control">
+              <input class="input" type="email" id="email" placeholder="メールアドレス">
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">パスワード</label>
+            <div class="control">
+              <input class="input" type="password" id="password" placeholder="パスワード">
+            </div>
+          </div>
+          <div class="field">
+            <div class="control">
+              <button class="button is-primary" id="login">ログイン</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="control">
+              <button class="button is-link is-light is-small" id="forgot-password">ログインできない場合</button>
+            </div>
+          </div>
+        </div>
+        <div id="message" class="notification is-hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    // Firebase SDKのインポート
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+    // Firebase設定（自分の設定に置き換えてください）
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZ6NQ9gR_5r5LX_lnuV3AAahpJrrBZwzg",
+      authDomain: "pest-a69d4.firebaseapp.com",
+      projectId: "pest-a69d4",
+      storageBucket: "pest-a69d4.appspot.com",
+      messagingSenderId: "1073634294855",
+      appId: "1:1073634294855:web:c2fdf25327abc64ded0562",
+      measurementId: "G-WZS7H4KZ83"
+    };
+
+    // Firebaseの初期化
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // DOM要素の取得
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const messageDiv = document.getElementById('message');
+
+    // ログインページにアクセスする前に、ログイン済みならindex.htmlにリダイレクト
+    window.onload = () => {
+      const lastLoginTime = localStorage.getItem('lastLoginTime');
+      const currentTime = Date.now();
+      if (lastLoginTime && (currentTime - lastLoginTime < 48 * 60 * 60 * 1000)) {
+        if (window.location.pathname === "/login.html") {
+          window.location.href = "index.html";
+        }
+      }
+    };
+
+    // ログイン
+    document.getElementById('login').addEventListener('click', () => {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(userCredential => {
+          localStorage.setItem('lastLoginTime', Date.now());
+          messageDiv.textContent = `ログイン成功: ${userCredential.user.email}`;
+          messageDiv.classList.remove('is-danger');
+          messageDiv.classList.add('is-success');
+          messageDiv.classList.remove('is-hidden');
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 1000); // 1秒待機
+        })
+        .catch(error => {
+          messageDiv.textContent = `エラー: ${error.message}`;
+          messageDiv.classList.add('is-danger');
+          messageDiv.classList.remove('is-hidden');
+        });
+    });
+
+    // パスワードを忘れた場合
+    document.getElementById('forgot-password').addEventListener('click', () => {
+      messageDiv.textContent = "メールアドレス及びパスワードに誤りがないか確認してください。パスワードのリセット又は新規アカウント作成を希望される方は開発者にご連絡ください。";
+      messageDiv.classList.remove('is-hidden');
+      messageDiv.classList.remove('is-danger');
+      messageDiv.classList.add('is-info');
+    });
+  </script>
+</body>
+</html>
